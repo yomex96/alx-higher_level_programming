@@ -1,61 +1,36 @@
+#include <stdlib.h>
 #include "lists.h"
 
-listint_t *reverse_listint(listint_t **head);
-
 /**
- * is_palindrome - Write a function in C that checks if a singly linked
- *                 list is a palindrome.
- *
- * @head: This is the input single linked list
- *
- * Return: Return: 0 if it is not a palindrome, 1 if it is a palindrome
- *                 An empty list is considered a palindrome
- *
+ * is_palindrome - checks if a singly linked list is a palindrome.
+ * @head: pointer to the list.
+ * Return: 0 if it is not a palindrome, 1 if it is a palindrome or -1 (error).
  */
-
 int is_palindrome(listint_t **head)
 {
-	listint_t *aux = *head, *current = *head;
+	listint_t *aux;
+	int len, i, *copy;
 
-	if (*head == NULL)
+	/* empty list */
+	if (!*head || !head)
 		return (1);
-	if ((*head)->next == NULL)
-		return (1);
-	while (current != NULL && aux != NULL && aux->next != NULL)
-	{
-		current = current->next;
-		aux = aux->next->next;
-	}
-	current = reverse_listint(&current);
+	/* calculate length of the list */
 	aux = *head;
-	while (aux != NULL && current != NULL)
-	{
-		if (aux->n != current->n)
-			return (0);
+	for (len = 1; aux->next; len++)
 		aux = aux->next;
-		current = current->next;
-	}
+	/* create a copy of the list in an array */
+	copy = malloc(sizeof(int) * (len));
+	if (!copy)
+		return (-1);
+	for (i = 0, aux = *head; i < len; i++, aux = aux->next)
+		copy[i] = aux->n;
+	/* checks if its a palindrome */
+	for (i = 0; i < (len / 2); i++)
+		if (copy[i] != copy[len - 1 - i])
+		{
+			free(copy);
+			return (0);
+		}
+	free(copy);
 	return (1);
-}
-/**
- * reverse_listint - Function that reverses a listint_t linked list
- *
- * @head: This is the input single linked list
- *
- * Return: Pointer to the first node of the reversed list
- */
-
-listint_t *reverse_listint(listint_t **head)
-{
-	listint_t *next = *head, *current = NULL;
-
-	while (*head != NULL)
-	{
-		next = (*head)->next;
-		(*head)->next = current;
-		current = *head;
-		*head = next;
-	}
-	*head = current;
-	return (*head);
 }
