@@ -1,188 +1,186 @@
 #!/usr/bin/python3
-# base.py
-"""Defines a base model class."""
-import json
-import csv
-import turtle
+"""
+Unittests for Base Class
+"""
+
+from models.base import Base
+from models.rectangle import Rectangle
+from models.square import Square
+import unittest, sys, json
+from unittest.mock import patch
+from io import StringIO
+import os
 
 
-class Base:
-    """Represent the base model.
-
-    Represents the "base" for all other classes in project 0x0C*.
-
-    Attributes:
-        __nb_objects (int): The number of instantiated Bases.
-    """
-
-    __nb_objects = 0
-
-    def __init__(self, id=None):
-        """Initialize a new Base.
-
-        Args:
-            id (int): The identity of the new Base.
-        """
-        if id is not None:
-            self.id = id
-        else:
-            Base.__nb_objects += 1
-            self.id = Base.__nb_objects
-
-    @staticmethod
-    def to_json_string(list_dictionaries):
-        """Return the JSON serialization of a list of dicts.
-
-        Args:
-            list_dictionaries (list): A list of dictionaries.
-        """
-        if list_dictionaries is None or list_dictionaries == []:
-            return "[]"
-        return json.dumps(list_dictionaries)
+class TestBaseClass(unittest.TestCase):
+    """Test Base Class"""
 
     @classmethod
-    def save_to_file(cls, list_objs):
-        """Write the JSON serialization of a list of objects to a file.
+    def setUpClass(cls):
+        """setup class method"""
 
-        Args:
-            list_objs (list): A list of inherited Base instances.
-        """
-        filename = cls.__name__ + ".json"
-        with open(filename, "w") as jsonfile:
-            if list_objs is None:
-                jsonfile.write("[]")
-            else:
-                list_dicts = [o.to_dictionary() for o in list_objs]
-                jsonfile.write(Base.to_json_string(list_dicts))
-
-    @staticmethod
-    def from_json_string(json_string):
-        """Return the deserialization of a JSON string.
-
-        Args:
-            json_string (str): A JSON str representation of a list of dicts.
-        Returns:
-            If json_string is None or empty - an empty list.
-            Otherwise - the Python list represented by json_string.
-        """
-        if json_string is None or json_string == "[]":
-            return []
-        return json.loads(json_string)
+        cls.bs1 = Base()
+        cls.bs2 = Base(100)
+        cls.bs3 = Base()
+        cls.rt1 = Rectangle(10, 10)
+        cls.rt2 = Rectangle(20, 20, id=1000)
+        cls.rt3 = Rectangle(30, 30, 3, 3, id=100)
+        cls.sq1 = Square(10)
+        cls.sq2 = Square(5, 5, 4, id=200)
+        cls.sq3 = Square(12, id=22)
 
     @classmethod
-    def create(cls, **dictionary):
-        """Return a class instantied from a dictionary of attributes.
+    def tearDownClass(cls):
+        """clear objects after all test"""
+        del cls.bs1
+        del cls.bs2
+        del cls.bs3
 
-        Args:
-            **dictionary (dict): Key/value pairs of attributes to initialize.
-        """
-        if dictionary and dictionary != {}:
-            if cls.__name__ == "Rectangle":
-                new = cls(1, 1)
-            else:
-                new = cls(1)
-            new.update(**dictionary)
-            return new
+    def test_output(self):
+        """test to stdout"""
+        school = "Coding"
+        language = "Python3"
+        testing = "Unittest"
+        expected_output = "{} {} {}".format(school, language, testing)
 
-    @classmethod
-    def load_from_file(cls):
-        """Return a list of classes instantiated from a file of JSON strings.
+        with patch('sys.stdout', new=StringIO()) as fake_out:
+            print("Coding Python3 Unittest")
+            self.assertEqual(fake_out.getvalue().strip(), expected_output)
 
-        Reads from `<cls.__name__>.json`.
+    def test_base_cls_doc(self):
+        """check if docstring for class is present"""
+        self.assertIsNotNone(Base.__doc__)
 
-        Returns:
-            If the file does not exist - an empty list.
-            Otherwise - a list of instantiated classes.
-        """
-        filename = str(cls.__name__) + ".json"
-        try:
-            with open(filename, "r") as jsonfile:
-                list_dicts = Base.from_json_string(jsonfile.read())
-                return [cls.create(**d) for d in list_dicts]
-        except IOError:
-            return []
+    def test_base_instance_doc(self):
+        """check if instance of Base is present"""
+        self.assertIsNotNone(self.sq1.__doc__)
+        self.assertIsNotNone(self.rt1.__doc__)
+        self.assertIsNotNone(self.sq1.__doc__)
 
-    @classmethod
-    def save_to_file_csv(cls, list_objs):
-        """Write the CSV serialization of a list of objects to a file.
+    def test_base_methods_doc(self):
+        """docstring exist for all methods"""
+        self.assertTrue(Base.__init__.__doc__)
+        self.assertTrue(Base.integer_validator.__doc__)
+        self.assertTrue(Base.integer_validator2.__doc__)
+        self.assertTrue(Base.to_json_string.__doc__)
+        self.assertTrue(Base.from_json_string.__doc__)
+        self.assertTrue(Base.save_to_file.__doc__)
+        self.assertTrue(Base.create.__doc__)
+        self.assertTrue(Base.load_from_file.__doc__)
 
-        Args:
-            list_objs (list): A list of inherited Base instances.
-        """
-        filename = cls.__name__ + ".csv"
-        with open(filename, "w", newline="") as csvfile:
-            if list_objs is None or list_objs == []:
-                csvfile.write("[]")
-            else:
-                if cls.__name__ == "Rectangle":
-                    fieldnames = ["id", "width", "height", "x", "y"]
-                else:
-                    fieldnames = ["id", "size", "x", "y"]
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                for obj in list_objs:
-                    writer.writerow(obj.to_dictionary())
+    def test_class_var_exist(self):
+        """check is class variable have value after instantiation"""
+        self.assertIsNotNone(Base._Base__nb_objects)
 
-    @classmethod
-    def load_from_file_csv(cls):
-        """Return a list of classes instantiated from a CSV file.
+    def test_base_init_id(self):
+        """Base initiation test"""
+        self.assertEqual(self.bs1.id, 1)
+        self.assertEqual(self.bs2.id, 100)
+        self.assertEqual(self.bs3.id, 2)
 
-        Reads from `<cls.__name__>.csv`.
+    def test_obj_id_exist(self):
+        """check if obj id is incrementing correctly"""
+        self.assertIsNotNone(self.bs1.id)
+        self.assertIsNotNone(Base._Base__nb_objects)
 
-        Returns:
-            If the file does not exist - an empty list.
-            Otherwise - a list of instantiated classes.
-        """
-        filename = cls.__name__ + ".csv"
-        try:
-            with open(filename, "r", newline="") as csvfile:
-                if cls.__name__ == "Rectangle":
-                    fieldnames = ["id", "width", "height", "x", "y"]
-                else:
-                    fieldnames = ["id", "size", "x", "y"]
-                list_dicts = csv.DictReader(csvfile, fieldnames=fieldnames)
-                list_dicts = [dict([k, int(v)] for k, v in d.items())
-                              for d in list_dicts]
-                return [cls.create(**d) for d in list_dicts]
-        except IOError:
-            return []
+    def test_clsVar_match_id(self):
+        """match class var to obj id"""
+        self.assertEqual(Base._Base__nb_objects, self.sq1.id)
 
-    @staticmethod
-    def draw(list_rectangles, list_squares):
-        """Draw Rectangles and Squares using the turtle module.
+    def test_obj_id(self):
+        """check if id is assigning correctly"""
+        self.assertEqual(self.rt2.id, 1000)
+        self.assertEqual(self.sq2.id, 200)
+        self.assertEqual(self.sq3.id, 22)
+        self.assertEqual(self.bs1.id, 1)
 
-        Args:
-            list_rectangles (list): A list of Rectangle objects to draw.
-            list_squares (list): A list of Square objects to draw.
-        """
-        turt = turtle.Turtle()
-        turt.screen.bgcolor("#b7312c")
-        turt.pensize(3)
-        turt.shape("turtle")
+    def test_base_methods(self):
+        """check for method exists in base"""
+        self.assertTrue(hasattr(Base, "__init__"))
+        self.assertTrue(hasattr(Base, "integer_validator"))
+        self.assertTrue(hasattr(Base, "integer_validator2"))
+        self.assertTrue(hasattr(Base, "to_json_string"))
+        self.assertTrue(hasattr(Base, "from_json_string"))
+        self.assertTrue(hasattr(Base, "save_to_file"))
+        self.assertTrue(hasattr(Base, "create"))
+        self.assertTrue(hasattr(Base, "load_from_file"))
 
-        turt.color("#ffffff")
-        for rect in list_rectangles:
-            turt.showturtle()
-            turt.up()
-            turt.goto(rect.x, rect.y)
-            turt.down()
-            for i in range(2):
-                turt.forward(rect.width)
-                turt.left(90)
-                turt.forward(rect.height)
-                turt.left(90)
-            turt.hideturtle()
+    def test_int_value(self):
+        """raise correct value error"""
+        with self.assertRaises(ValueError):
+            self.rt1.integer_validator(-20, -20)
 
-        turt.color("#b5e3d8")
-        for sq in list_squares:
-            turt.showturtle()
-            turt.up()
-            turt.goto(sq.x, sq.y)
-            turt.down()
-            for i in range(2):
-                turt.forward(sq.width)
-                turt.left(90)
-                turt.forward(sq.height)
-                turt.left(90)
-            turt.hideturtle()
+    def test_int_type(self):
+        """raise correct type error"""
+        with self.assertRaises(TypeError):
+            self.rt2.integer_validator2("str", "str")
 
-        turtle.exitonclick()
+    def test_to_json(self):
+        """test save list to json"""
+        list1 = [
+            {'id': 100},
+            {'height': 88},
+            {'width': 1, 'id': 2, 'height': 88},
+            {'id': 4, 'height': 144, 'weight': 700},
+            {'width': 22, 'height': 11}
+        ]
+        empty = []
+
+        rect_to_json = Rectangle.to_json_string(list1)
+        base_to_json = Base.to_json_string(list1)
+
+        rect_to_empty_json = Rectangle.to_json_string(empty)
+        base_to_empty_json = Base.to_json_string(empty)
+
+        self.assertIsInstance(list1, list)
+        self.assertIsInstance(rect_to_json, str)
+        self.assertIsInstance(base_to_json, str)
+
+        self.assertIsInstance(empty, list)
+        self.assertIsInstance(rect_to_empty_json, str)
+        self.assertIsInstance(base_to_empty_json, str)
+
+        rect_from_json = Rectangle.from_json_string(rect_to_json)
+        base_from_json = Base.from_json_string(rect_to_json)
+
+        self.assertIsInstance(rect_from_json, list)
+        self.assertIsInstance(base_from_json, list)
+
+    def test_create(self):
+        """check if instance create and attr set"""
+        self.assertIsNotNone(self.sq2.__init__)
+        self.assertIsNotNone(self.rt2.__dict__)
+
+        attrs = ["width", "height", "x", "y", "id"]
+        for attr in attrs:
+            self.assertTrue(hasattr(self.rt2, attr))
+
+        rt_dict = self.rt3.to_dictionary()
+        rt_create = Rectangle.create(**rt_dict)
+        self.assertEqual(self.rt3.__str__(), '[Rectangle] (100) 3/3 - 30/30')
+
+    def test_load_file(self):
+        """check load file method"""
+        self.assertTrue(os.path.isfile('Rectangle.json'))
+        with open('Rectangle.json') as file:
+            for line in file:
+                self.assertEqual(type(line), str)
+
+        list_of_obj = [self.rt1, self.rt2, self.rt3]
+        for obj in list_of_obj:
+            self.assertIsInstance(obj, Rectangle)
+            self.assertIsInstance(obj, Base)
+
+        list_of_output = Rectangle.load_from_file()
+        for rect in list_of_output:
+            self.assertIsInstance(rect, Rectangle)
+
+        Rectangle.save_to_file(list_of_obj)
+        with open('Rectangle.json', mode='r') as file:
+            count = 0
+            for line in file:
+                count += 1
+            self.assertGreater(count, 0)
+
+if __name__ == '__main__':
+    unittest.main()
