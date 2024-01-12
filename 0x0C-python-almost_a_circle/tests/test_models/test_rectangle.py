@@ -4,7 +4,7 @@ Unittests for Base Class
 """
 import unittest, json, sys
 from models.base import Base
-from models.rectange import Rectangle
+from models.rectangle import Rectangle
 from models.square import Square
 
 
