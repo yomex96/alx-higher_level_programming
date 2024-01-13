@@ -1,186 +1,293 @@
 #!/usr/bin/python3
 """
-Unittests for Base Class
+Unittest for "base.py"
+Execute all tests: python3 -m unittest discover tests
+Execute this test: python3 -m unittest tests/test_models/test_base.py
 """
 
-from models.base import Base
-from models.rectangle import Rectangle
-from models.square import Square
-import unittest, sys, json
-from unittest.mock import patch
-from io import StringIO
-import os
+import unittest
+import pycodestyle
+from models import base
+"""
+Unittest for "base.py"
+Execute all tests: python3 -m unittest discover tests
+Execute this test: python3 -m unittest tests/test_models/test_base.py
+"""
+
+import unittest
+import pycodestyle
+from models import base
+Base = base.Base
 
 
-class TestBaseClass(unittest.TestCase):
-    """Test Base Class"""
+class TestBase(unittest.TestCase):
+    """
+    class that test the max integer function
+    Task 1:
+        you can assume id is an integer and you don’t need to test the
+            type of it
+    Tests:
+        test_many_created (working test):
+            no arguments when created Base
+            None arguments when created Base
+            Random integer argument when created Base
+            negative integer when creating Base
+            double same id when creating Base
+        test_too_many_arguments (no-working test):
+            too many arguments given
+    """
 
-    @classmethod
-    def setUpClass(cls):
-        """setup class method"""
+    def test_documentation(self):
+        """test all documentation of module"""
+        # module documentation
+        module = len(base.__doc__)
+        self.assertGreater(module, 0)
 
-        cls.bs1 = Base()
-        cls.bs2 = Base(100)
-        cls.bs3 = Base()
-        cls.rt1 = Rectangle(10, 10)
-        cls.rt2 = Rectangle(20, 20, id=1000)
-        cls.rt3 = Rectangle(30, 30, 3, 3, id=100)
-        cls.sq1 = Square(10)
-        cls.sq2 = Square(5, 5, 4, id=200)
-        cls.sq3 = Square(12, id=22)
+        # class documentation
+        module_class = len(Base.__doc__)
+        self.assertGreater(module_class, 0)
 
-    @classmethod
-    def tearDownClass(cls):
-        """clear objects after all test"""
-        del cls.bs1
-        del cls.bs2
-        del cls.bs3
+        module_class = len(Base.__init__.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_output(self):
-        """test to stdout"""
-        school = "Coding"
-        language = "Python3"
-        testing = "Unittest"
-        expected_output = "{} {} {}".format(school, language, testing)
+        module_class = len(Base.to_json_string.__doc__)
+        self.assertGreater(module_class, 0)
 
-        with patch('sys.stdout', new=StringIO()) as fake_out:
-            print("Coding Python3 Unittest")
-            self.assertEqual(fake_out.getvalue().strip(), expected_output)
+        module_class = len(Base.save_to_file.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_base_cls_doc(self):
-        """check if docstring for class is present"""
-        self.assertIsNotNone(Base.__doc__)
+        module_class = len(Base.from_json_string.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_base_instance_doc(self):
-        """check if instance of Base is present"""
-        self.assertIsNotNone(self.sq1.__doc__)
-        self.assertIsNotNone(self.rt1.__doc__)
-        self.assertIsNotNone(self.sq1.__doc__)
+        module_class = len(Base.create.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_base_methods_doc(self):
-        """docstring exist for all methods"""
-        self.assertTrue(Base.__init__.__doc__)
-        self.assertTrue(Base.integer_validator.__doc__)
-        self.assertTrue(Base.integer_validator2.__doc__)
-        self.assertTrue(Base.to_json_string.__doc__)
-        self.assertTrue(Base.from_json_string.__doc__)
-        self.assertTrue(Base.save_to_file.__doc__)
-        self.assertTrue(Base.create.__doc__)
-        self.assertTrue(Base.load_from_file.__doc__)
+        module_class = len(Base.load_from_file.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_class_var_exist(self):
-        """check is class variable have value after instantiation"""
-        self.assertIsNotNone(Base._Base__nb_objects)
+        module_class = len(Base.save_to_file_csv.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_base_init_id(self):
-        """Base initiation test"""
-        self.assertEqual(self.bs1.id, 1)
-        self.assertEqual(self.bs2.id, 100)
-        self.assertEqual(self.bs3.id, 2)
+        module_class = len(Base.load_from_file_csv.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_obj_id_exist(self):
-        """check if obj id is incrementing correctly"""
-        self.assertIsNotNone(self.bs1.id)
-        self.assertIsNotNone(Base._Base__nb_objects)
+        module_class = len(Base.draw.__doc__)
+        self.assertGreater(module_class, 0)
 
-    def test_clsVar_match_id(self):
-        """match class var to obj id"""
-        self.assertEqual(Base._Base__nb_objects, self.sq1.id)
+    def test_conformance(self):
+        """Test that we conform to PEP-8."""
+        style = pycodestyle.StyleGuide(quiet=True)
+        result = style.check_files(["models/base.py"])
+        self.assertEqual(
+            result.total_errors, 0, "Found code style errors (pycodestyle)."
+        )
 
-    def test_obj_id(self):
-        """check if id is assigning correctly"""
-        self.assertEqual(self.rt2.id, 1000)
-        self.assertEqual(self.sq2.id, 200)
-        self.assertEqual(self.sq3.id, 22)
-        self.assertEqual(self.bs1.id, 1)
+    def test_many_created(self):
+        """fuction that test for good assignment of differents id value"""
+        b1 = Base()
+        b2 = Base(None)
+        b3 = Base(12)
+        b4 = Base()
+        b5 = Base(-3)
+        b6 = Base(2)
 
-    def test_base_methods(self):
-        """check for method exists in base"""
-        self.assertTrue(hasattr(Base, "__init__"))
-        self.assertTrue(hasattr(Base, "integer_validator"))
-        self.assertTrue(hasattr(Base, "integer_validator2"))
-        self.assertTrue(hasattr(Base, "to_json_string"))
-        self.assertTrue(hasattr(Base, "from_json_string"))
-        self.assertTrue(hasattr(Base, "save_to_file"))
-        self.assertTrue(hasattr(Base, "create"))
-        self.assertTrue(hasattr(Base, "load_from_file"))
+        self.assertEqual(b1.id, 1)
+        self.assertEqual(b2.id, 2)
+        self.assertEqual(b3.id, 12)
+        self.assertEqual(b4.id, 3)
+        self.assertEqual(b5.id, -3)
+        self.assertEqual(b6.id, 2)
 
-    def test_int_value(self):
-        """raise correct value error"""
-        with self.assertRaises(ValueError):
-            self.rt1.integer_validator(-20, -20)
-
-    def test_int_type(self):
-        """raise correct type error"""
+    def test_too_many_arguments(self):
+        """
+        fuction that test for TypeError
+        """
         with self.assertRaises(TypeError):
-            self.rt2.integer_validator2("str", "str")
+            Base(1, 2)
 
-    def test_to_json(self):
-        """test save list to json"""
-        list1 = [
-            {'id': 100},
-            {'height': 88},
-            {'width': 1, 'id': 2, 'height': 88},
-            {'id': 4, 'height': 144, 'weight': 700},
-            {'width': 22, 'height': 11}
-        ]
-        empty = []
+    def test_toJsonString(self):
+        """Convert list to Json content"""
+        l = [{"Salut": 1, "Bonjour": 2}]
+        string = Base.to_json_string(l)
+        self.assertTrue(type(string), str)
+        self.assertEqual(string, '[{"Salut": 1, "Bonjour": 2}]')
 
-        rect_to_json = Rectangle.to_json_string(list1)
-        base_to_json = Base.to_json_string(list1)
+    def test_toJsonString_empty(self):
+        """Convert empty list to Json content"""
+        l = []
+        string = Base.to_json_string(l)
+        self.assertTrue(type(string), str)
+        self.assertEqual(string, '[]')
 
-        rect_to_empty_json = Rectangle.to_json_string(empty)
-        base_to_empty_json = Base.to_json_string(empty)
+    def test_toJsonString_None(self):
+        """Convert None to Json content"""
+        l = None
+        string = Base.to_json_string(l)
+        self.assertTrue(type(string), str)
+        self.assertEqual(string, '[]')
 
-        self.assertIsInstance(list1, list)
-        self.assertIsInstance(rect_to_json, str)
-        self.assertIsInstance(base_to_json, str)
+    def test_fromJsonString(self):
+        """Convert Json content to list"""
+        string = '[{"Salut": 1, "Bonjour": 2}]'
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l, [{"Salut": 1, "Bonjour": 2}])
 
-        self.assertIsInstance(empty, list)
-        self.assertIsInstance(rect_to_empty_json, str)
-        self.assertIsInstance(base_to_empty_json, str)
+    def test_fromJsonStringList(self):
+        """Convert Json content to list"""
+        string = '[{"Salut": 1, "Bonjour": 2}, {"Hola": 1}]'
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l[0], {"Salut": 1, "Bonjour": 2})
+        self.assertEqual(l[1], {"Hola": 1})
 
-        rect_from_json = Rectangle.from_json_string(rect_to_json)
-        base_from_json = Base.from_json_string(rect_to_json)
+    def test_fromJsonString_None(self):
+        """Convert None Json content to list"""
+        string = None
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l, [])
 
-        self.assertIsInstance(rect_from_json, list)
-        self.assertIsInstance(base_from_json, list)
+    def test_fromJsonString_len0(self):
+        """Convert empty Json content to list"""
+        string = ""
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l, [])
 
-    def test_create(self):
-        """check if instance create and attr set"""
-        self.assertIsNotNone(self.sq2.__init__)
-        self.assertIsNotNone(self.rt2.__dict__)
+if __name__ == "__main__":
+    unittest.main()
 
-        attrs = ["width", "height", "x", "y", "id"]
-        for attr in attrs:
-            self.assertTrue(hasattr(self.rt2, attr))
+Base = base.Base
 
-        rt_dict = self.rt3.to_dictionary()
-        rt_create = Rectangle.create(**rt_dict)
-        self.assertEqual(self.rt3.__str__(), '[Rectangle] (100) 3/3 - 30/30')
 
-    def test_load_file(self):
-        """check load file method"""
-        self.assertTrue(os.path.isfile('Rectangle.json'))
-        with open('Rectangle.json') as file:
-            for line in file:
-                self.assertEqual(type(line), str)
+class TestBase(unittest.TestCase):
+    """
+    class that test the max integer function
+    Task 1:
+        you can assume id is an integer and you don’t need to test the
+            type of it
+    Tests:
+        test_many_created (working test):
+            no arguments when created Base
+            None arguments when created Base
+            Random integer argument when created Base
+            negative integer when creating Base
+            double same id when creating Base
+        test_too_many_arguments (no-working test):
+            too many arguments given
+    """
 
-        list_of_obj = [self.rt1, self.rt2, self.rt3]
-        for obj in list_of_obj:
-            self.assertIsInstance(obj, Rectangle)
-            self.assertIsInstance(obj, Base)
+    def test_documentation(self):
+        """test all documentation of module"""
+        # module documentation
+        module = len(base.__doc__)
+        self.assertGreater(module, 0)
 
-        list_of_output = Rectangle.load_from_file()
-        for rect in list_of_output:
-            self.assertIsInstance(rect, Rectangle)
+        # class documentation
+        module_class = len(Base.__doc__)
+        self.assertGreater(module_class, 0)
 
-        Rectangle.save_to_file(list_of_obj)
-        with open('Rectangle.json', mode='r') as file:
-            count = 0
-            for line in file:
-                count += 1
-            self.assertGreater(count, 0)
+        module_class = len(Base.__init__.__doc__)
+        self.assertGreater(module_class, 0)
 
-if __name__ == '__main__':
+        module_class = len(Base.to_json_string.__doc__)
+        self.assertGreater(module_class, 0)
+
+        module_class = len(Base.save_to_file.__doc__)
+        self.assertGreater(module_class, 0)
+
+        module_class = len(Base.from_json_string.__doc__)
+        self.assertGreater(module_class, 0)
+
+        module_class = len(Base.create.__doc__)
+        self.assertGreater(module_class, 0)
+
+        module_class = len(Base.load_from_file.__doc__)
+        self.assertGreater(module_class, 0)
+
+        module_class = len(Base.save_to_file_csv.__doc__)
+        self.assertGreater(module_class, 0)
+
+        module_class = len(Base.load_from_file_csv.__doc__)
+        self.assertGreater(module_class, 0)
+
+        module_class = len(Base.draw.__doc__)
+        self.assertGreater(module_class, 0)
+
+
+    def test_many_created(self):
+        """fuction that test for good assignment of differents id value"""
+        b1 = Base()
+        b2 = Base(None)
+        b3 = Base(12)
+        b4 = Base()
+        b5 = Base(-3)
+        b6 = Base(2)
+
+        self.assertEqual(b1.id, 1)
+        self.assertEqual(b2.id, 2)
+        self.assertEqual(b3.id, 12)
+        self.assertEqual(b4.id, 3)
+        self.assertEqual(b5.id, -3)
+        self.assertEqual(b6.id, 2)
+
+    def test_too_many_arguments(self):
+        """
+        fuction that test for TypeError
+        """
+        with self.assertRaises(TypeError):
+            Base(1, 2)
+
+    def test_toJsonString(self):
+        """Convert list to Json content"""
+        l = [{"Salut": 1, "Bonjour": 2}]
+        string = Base.to_json_string(l)
+        self.assertTrue(type(string), str)
+        self.assertEqual(string, '[{"Salut": 1, "Bonjour": 2}]')
+
+    def test_toJsonString_empty(self):
+        """Convert empty list to Json content"""
+        l = []
+        string = Base.to_json_string(l)
+        self.assertTrue(type(string), str)
+        self.assertEqual(string, '[]')
+
+    def test_toJsonString_None(self):
+        """Convert None to Json content"""
+        l = None
+        string = Base.to_json_string(l)
+        self.assertTrue(type(string), str)
+        self.assertEqual(string, '[]')
+
+    def test_fromJsonString(self):
+        """Convert Json content to list"""
+        string = '[{"Salut": 1, "Bonjour": 2}]'
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l, [{"Salut": 1, "Bonjour": 2}])
+
+    def test_fromJsonStringList(self):
+        """Convert Json content to list"""
+        string = '[{"Salut": 1, "Bonjour": 2}, {"Hola": 1}]'
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l[0], {"Salut": 1, "Bonjour": 2})
+        self.assertEqual(l[1], {"Hola": 1})
+
+    def test_fromJsonString_None(self):
+        """Convert None Json content to list"""
+        string = None
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l, [])
+
+    def test_fromJsonString_len0(self):
+        """Convert empty Json content to list"""
+        string = ""
+        l = Base.from_json_string(string)
+        self.assertTrue(type(l), list)
+        self.assertEqual(l, [])
+
+if __name__ == "__main__":
     unittest.main()
