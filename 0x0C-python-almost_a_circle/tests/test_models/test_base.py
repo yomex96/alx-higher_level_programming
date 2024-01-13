@@ -289,5 +289,13 @@ class TestBase(unittest.TestCase):
         self.assertTrue(type(l), list)
         self.assertEqual(l, [])
 
+    def test_conformance(self):
+        """Test that we conform to PEP-8."""
+        style = pycodestyle.StyleGuide(quiet=True)
+        result = style.check_files(["models/base.py"])
+        self.assertEqual(
+            result.total_errors, 1, "Found code style errors (pycodestyle)."
+        )
+
 if __name__ == "__main__":
     unittest.main()
